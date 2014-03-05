@@ -11,3 +11,7 @@
 *.lai
 *.la
 *.a
+
+# Uninteresting Log files
+*.ps3
+*.rpcs3
