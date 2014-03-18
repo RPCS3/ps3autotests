@@ -5,6 +5,7 @@
 #define PRINT_GPR1(name,i,GPR) printf(name "([%02d]) -> %016llx\n", i, *(unsigned long long*)&GPR);
 #define PRINT_GPR2(name,i,j,GPR) printf(name "([%02d],[%02d]) -> %016llx\n", i, j, *(unsigned long long*)&GPR);
 #define PRINT_GPR3(name,i,j,k,GPR) printf(name "([%02d],[%02d],[%02d]) -> %016llx\n", i, j, k, *(unsigned long long*)&GPR);
+#define PRINT_GPR4(name,i,j,k,l,GPR) printf(name "([%02d],[%02d],[%02d],[%02d]) -> %016llx\n", i, j, k, l, *(unsigned long long*)&GPR);
 
 // Loops with 64-bit integers
 #define ITERATE1i(x) \
@@ -67,7 +68,38 @@ int main(void)
 	ITERATE2i(__asm__ ("divdu   %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("divdu  ",i,j,r0));
 
 	// Integer Compare Instructions
-	// TODO ?
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"( 0));  PRINT_GPR3("cmpi  ",0,i, 0,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"( 1));  PRINT_GPR3("cmpi  ",0,i, 1,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"(-1));  PRINT_GPR3("cmpi  ",0,i,-1,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"(  1000));  PRINT_GPR3("cmpi  ",0,i,  1000,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"( 32767));  PRINT_GPR3("cmpi  ",0,i, 32767,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"(-32768));  PRINT_GPR3("cmpi  ",0,i,-32768,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"(-32767));  PRINT_GPR3("cmpi  ",0,i,-32767,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"( 0));  PRINT_GPR3("cmpi  ",1,i, 0,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"( 1));  PRINT_GPR3("cmpi  ",1,i, 1,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"(-1));  PRINT_GPR3("cmpi  ",1,i,-1,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"(  1000));  PRINT_GPR3("cmpi  ",1,i,  1000,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"( 32767));  PRINT_GPR3("cmpi  ",1,i, 32767,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"(-32768));  PRINT_GPR3("cmpi  ",1,i,-32768,r0)); // SIMM
+	ITERATE1i(__asm__ ("cmpi    %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"(-32767));  PRINT_GPR3("cmpi  ",1,i,-32767,r0)); // SIMM
+	ITERATE2i(__asm__ ("cmp     %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "r"(r2));  PRINT_GPR3("cmp  ",0,i,j,r0));
+	ITERATE2i(__asm__ ("cmp     %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "r"(r2));  PRINT_GPR3("cmp  ",1,i,j,r0));
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"( 0));  PRINT_GPR3("cmpli  ",0,i, 0,r0)); // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"( 1));  PRINT_GPR3("cmpli  ",0,i, 1,r0)); // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"(0xffff));  PRINT_GPR3("cmpli  ",0,i,0xffff,r0)); // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"(  1000));  PRINT_GPR3("cmpli  ",0,i, 1000,r0));  // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"(0x7fff));  PRINT_GPR3("cmpli  ",0,i,0x7fff,r0)); // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"(0x8000));  PRINT_GPR3("cmpli  ",0,i,0x8000,r0)); // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "i"(0x8001));  PRINT_GPR3("cmpli  ",0,i,0x8001,r0)); // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"( 0));  PRINT_GPR3("cmpli  ",1,i, 0,r0)); // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"( 1));  PRINT_GPR3("cmpli  ",1,i, 1,r0)); // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"(0xffff));  PRINT_GPR3("cmpli  ",1,i,0xffff,r0)); // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"(  1000));  PRINT_GPR3("cmpli  ",1,i,  1000,r0)); // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"(0x7fff));  PRINT_GPR3("cmpli  ",1,i,0x7fff,r0)); // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"(0x8000));  PRINT_GPR3("cmpli  ",1,i,0x8000,r0)); // UIMM
+	ITERATE1i(__asm__ ("cmpli   %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "i"(0x8001));  PRINT_GPR3("cmpli  ",1,i,0x8001,r0)); // UIMM
+	ITERATE2i(__asm__ ("cmpl    %0,%1,%2,%3" : "=r"(r0) : "i"(0), "r"(r1), "r"(r2));  PRINT_GPR3("cmpl  ",0,i,j,r0));
+	ITERATE2i(__asm__ ("cmpl    %0,%1,%2,%3" : "=r"(r0) : "i"(1), "r"(r1), "r"(r2));  PRINT_GPR3("cmpl  ",1,i,j,r0));
 
 	// Integer Logical Instructions
 	ITERATE1i(__asm__ ("andi.   %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(0));  PRINT_GPR2("andi.  ",i,0,r0)); // UIMM
@@ -82,12 +114,12 @@ int main(void)
 	ITERATE1i(__asm__ ("oris    %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(0));  PRINT_GPR2("oris   ",i,0,r0)); // UIMM
 	ITERATE1i(__asm__ ("oris    %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(1));  PRINT_GPR2("oris   ",i,1,r0)); // UIMM
 	ITERATE1i(__asm__ ("oris    %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(0xffff));  PRINT_GPR2("oris   ",i,0xffff,r0)); // UIMM
-	ITERATE1i(__asm__ ("xori     %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(0));  PRINT_GPR2("xori  ",i,0,r0)); // UIMM
-	ITERATE1i(__asm__ ("xori     %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(1));  PRINT_GPR2("xori  ",i,1,r0)); // UIMM
-	ITERATE1i(__asm__ ("xori     %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(0xffff));  PRINT_GPR2("xori  ",i,0xffff,r0)); // UIMM
-	ITERATE1i(__asm__ ("xoris    %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(0));  PRINT_GPR2("xoris ",i,0,r0)); // UIMM
-	ITERATE1i(__asm__ ("xoris    %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(1));  PRINT_GPR2("xoris ",i,1,r0)); // UIMM
-	ITERATE1i(__asm__ ("xoris    %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(0xffff));  PRINT_GPR2("xoris ",i,0xffff,r0)); // UIMM
+	ITERATE1i(__asm__ ("xori    %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(0));  PRINT_GPR2("xori   ",i,0,r0)); // UIMM
+	ITERATE1i(__asm__ ("xori    %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(1));  PRINT_GPR2("xori   ",i,1,r0)); // UIMM
+	ITERATE1i(__asm__ ("xori    %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(0xffff));  PRINT_GPR2("xori   ",i,0xffff,r0)); // UIMM
+	ITERATE1i(__asm__ ("xoris   %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(0));  PRINT_GPR2("xoris  ",i,0,r0)); // UIMM
+	ITERATE1i(__asm__ ("xoris   %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(1));  PRINT_GPR2("xoris  ",i,1,r0)); // UIMM
+	ITERATE1i(__asm__ ("xoris   %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(0xffff));  PRINT_GPR2("xoris  ",i,0xffff,r0)); // UIMM
 	ITERATE2i(__asm__ ("and     %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("add   ",i,j,r0));
 	ITERATE2i(__asm__ ("or      %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("or    ",i,j,r0));
 	ITERATE2i(__asm__ ("xor     %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("xor   ",i,j,r0));
@@ -102,7 +134,7 @@ int main(void)
 	ITERATE1i(__asm__ ("cntlzw  %0,%1" : "=r"(r0) : "r"(r1));  PRINT_GPR1("cntlzw ",i,r0));
 	ITERATE1i(__asm__ ("cntlzd  %0,%1" : "=r"(r0) : "r"(r1));  PRINT_GPR1("cntlzd ",i,r0));
 
-	// Integer Rotate and Shift Instructions (TODO: Add rlwinm, rlwnm, rlwimi)
+	// Integer Rotate and Shift Instructions
 	ITERATE1i(__asm__ ("rldicl  %0,%1,%2,%3" : "=r"(r0) : "r"(r1), "i"(0), "i"(0));   PRINT_GPR3("rldicl ",i,0,0,r0));   // SH, MB
 	ITERATE1i(__asm__ ("rldicl  %0,%1,%2,%3" : "=r"(r0) : "r"(r1), "i"(0), "i"(1));   PRINT_GPR3("rldicl ",i,0,1,r0));   // SH, MB
 	ITERATE1i(__asm__ ("rldicl  %0,%1,%2,%3" : "=r"(r0) : "r"(r1), "i"(0), "i"(63));  PRINT_GPR3("rldicl ",i,0,63,r0));  // SH, MB
@@ -157,6 +189,33 @@ int main(void)
 	ITERATE1i(__asm__ ("srawi   %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(31));  PRINT_GPR2("srawi  ",i,31,r0)); // SH
 	ITERATE2i(__asm__ ("srad    %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("srad   ",i,j,r0));
 	ITERATE2i(__asm__ ("sraw    %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("sraw   ",i,j,r0));
+	ITERATE1i(__asm__ ("rlwinm  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"( 0), "i"( 0), "i"( 0)); PRINT_GPR4("rlwinm ",i, 0, 0, 0, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwinm  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"( 1), "i"( 0), "i"( 1)); PRINT_GPR4("rlwinm ",i, 1, 0, 1, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwinm  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"(31), "i"( 0), "i"(31)); PRINT_GPR4("rlwinm ",i,31, 0,31, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwinm  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"( 0), "i"( 1), "i"( 0)); PRINT_GPR4("rlwinm ",i, 0, 1, 0, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwinm  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"( 0), "i"( 1), "i"( 1)); PRINT_GPR4("rlwinm ",i, 0, 1, 1, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwinm  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"( 1), "i"( 1), "i"(31)); PRINT_GPR4("rlwinm ",i, 1, 1,31, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwinm  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"( 1), "i"(31), "i"( 0)); PRINT_GPR4("rlwinm ",i, 1,31, 0, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwinm  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"(31), "i"(31), "i"( 1)); PRINT_GPR4("rlwinm ",i,31,31, 1, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwinm  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"(31), "i"(31), "i"(31)); PRINT_GPR4("rlwinm ",i,31,31,31, r0)); // SH, MB, ME
+	ITERATE2i(__asm__ ("rlwnm   %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "r"(r2), "i"( 0), "i"( 0)); PRINT_GPR4("rlwnm  ",i,r2, 0, 0, r0)); // SH, MB, ME
+	ITERATE2i(__asm__ ("rlwnm   %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "r"(r2), "i"( 0), "i"( 1)); PRINT_GPR4("rlwnm  ",i,r2, 0, 1, r0)); // SH, MB, ME
+	ITERATE2i(__asm__ ("rlwnm   %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "r"(r2), "i"( 0), "i"(31)); PRINT_GPR4("rlwnm  ",i,r2, 0,31, r0)); // SH, MB, ME
+	ITERATE2i(__asm__ ("rlwnm   %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "r"(r2), "i"( 1), "i"( 0)); PRINT_GPR4("rlwnm  ",i,r2, 1, 0, r0)); // SH, MB, ME
+	ITERATE2i(__asm__ ("rlwnm   %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "r"(r2), "i"( 1), "i"( 1)); PRINT_GPR4("rlwnm  ",i,r2, 1, 1, r0)); // SH, MB, ME
+	ITERATE2i(__asm__ ("rlwnm   %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "r"(r2), "i"( 1), "i"(31)); PRINT_GPR4("rlwnm  ",i,r2, 1,31, r0)); // SH, MB, ME
+	ITERATE2i(__asm__ ("rlwnm   %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "r"(r2), "i"(31), "i"( 0)); PRINT_GPR4("rlwnm  ",i,r2,31, 0, r0)); // SH, MB, ME
+	ITERATE2i(__asm__ ("rlwnm   %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "r"(r2), "i"(31), "i"( 1)); PRINT_GPR4("rlwnm  ",i,r2,31, 1, r0)); // SH, MB, ME
+	ITERATE2i(__asm__ ("rlwnm   %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "r"(r2), "i"(31), "i"(31)); PRINT_GPR4("rlwnm  ",i,r2,31,31, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwimi  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"( 0), "i"( 0), "i"( 0)); PRINT_GPR4("rlwimi ",i, 0, 0, 0, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwimi  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"( 1), "i"( 0), "i"( 1)); PRINT_GPR4("rlwimi ",i, 1, 0, 1, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwimi  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"(31), "i"( 0), "i"(31)); PRINT_GPR4("rlwimi ",i,31, 0,31, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwimi  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"( 0), "i"( 1), "i"( 0)); PRINT_GPR4("rlwimi ",i, 0, 1, 0, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwimi  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"( 0), "i"( 1), "i"( 1)); PRINT_GPR4("rlwimi ",i, 0, 1, 1, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwimi  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"( 1), "i"( 1), "i"(31)); PRINT_GPR4("rlwimi ",i, 1, 1,31, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwimi  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"( 1), "i"(31), "i"( 0)); PRINT_GPR4("rlwimi ",i, 1,31, 0, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwimi  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"(31), "i"(31), "i"( 1)); PRINT_GPR4("rlwimi ",i,31,31, 1, r0)); // SH, MB, ME
+	ITERATE1i(__asm__ ("rlwimi  %0,%1,%2,%3,%4" : "=r"(r0) : "r"(r1), "i"(31), "i"(31), "i"(31)); PRINT_GPR4("rlwimi ",i,31,31,31, r0)); // SH, MB, ME
 
 	return 0;
 }
