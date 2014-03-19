@@ -7,6 +7,9 @@
 #define PRINT_GPR3(name,i,j,k,GPR) printf(name "([%02d],[%02d],[%02d]) -> %016llx\n", i, j, k, *(unsigned long long*)&GPR);
 #define PRINT_GPR4(name,i,j,k,l,GPR) printf(name "([%02d],[%02d],[%02d],[%02d]) -> %016llx\n", i, j, k, l, *(unsigned long long*)&GPR);
 
+#define PRINT_GPR1C(name,cyin,cyout,i,GPR) printf(name "([%02d],[c%02d]) -> %016llx [c%02d]\n", i, cyin, *(unsigned long long*)&GPR, cyout);
+#define PRINT_GPR2C(name,cyin,cyout,i,j,GPR) printf(name "([%02d],[%02d],[c%02d]) -> %016llx [c%02d]\n", i, j, cyin, *(unsigned long long*)&GPR, cyout);
+
 // Loops with 64-bit integers
 #define ITERATE1i(x) \
 	for (unsigned int i=0; i<sizeof(testInts64)/sizeof(long long); i++) \
@@ -29,6 +32,10 @@ int main(void)
 	//////////////////////////////
 	// PPU INTEGER INSTRUCTIONS //
 	//////////////////////////////
+	long long dst = 0;						//temporary variable to hold the value of the carry bit
+	long long zero = 0;						//used with addze to test if the carry bit (XER1[CA]) is set 
+	long long small = 5;					//small value that doesn't overflow when added to itself, used to clear the SPR1 carry bit (XER1[CA])
+	long long ffff = 0xFFFFFFFFFFFFFFFFLL;	//max value, guaranteed to overflow when added to itself
 
 	// Integer Arithmetic Instructions (TODO: Add *., *o, *o. instructions)
 	ITERATE1i(__asm__ ("addi    %0,%1,%2" : "=r"(r0) : "r"(r1), "i"(0));   PRINT_GPR2("addi   ",i,0,r0));  // SIMM
@@ -50,12 +57,96 @@ int main(void)
 	ITERATE2i(__asm__ ("subf    %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("subf   ",i,j,r0));
 	ITERATE2i(__asm__ ("addc    %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("addc   ",i,j,r0));
 	ITERATE2i(__asm__ ("subfc   %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("subfc  ",i,j,r0));
-	ITERATE2i(__asm__ ("adde    %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("adde   ",i,j,r0));
-	ITERATE2i(__asm__ ("subfe   %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("subfe  ",i,j,r0));
-	ITERATE1i(__asm__ ("addme   %0,%1" : "=r"(r0) : "r"(r1));  PRINT_GPR1("addme  ",i,r0));
-	//ITERATE1i(__asm__ ("subfme  %0,%1" : "=r"(r0) : "r"(r1));  PRINT_GPR1("subfme ",i,r0));
-	ITERATE1i(__asm__ ("addze   %0,%1" : "=r"(r0) : "r"(r1));  PRINT_GPR1("addze  ",i,r0));
-	//ITERATE1i(__asm__ ("subfze  %0,%1" : "=r"(r0) : "r"(r1));  PRINT_GPR1("subfze ",i,r0));
+
+	//set the carry bit to 1 and test the integer arithmetic instructions that use it
+	ITERATE2i(__asm__ ("adde    %1,%4,%4;\n\t"
+					   "adde    %0,%2,%3;\n\t"
+					   "addze	%1,%5;" 
+					   : "=&r"(r0),"=&r"(dst) 
+					   : "r"(r1), "r"(r2),"r"(ffff),"r"(zero));
+			  PRINT_GPR2C("adde   ",1,(int)dst,i,j,r0));
+
+	ITERATE2i(__asm__ ("adde    %1,%4,%4;\n\t"
+					   "subfe   %0,%2,%3;\n\t"
+					   "addze	%1,%5;" 
+					   : "=&r"(r0),"=&r"(dst) 
+					   : "r"(r1), "r"(r2),"r"(ffff),"r"(zero));
+			  PRINT_GPR2C("subfe  ",1,(int)dst,i,j,r0));
+
+	ITERATE1i(__asm__ ("adde    %1,%3,%3;\n\t"
+					   "addme   %0,%2;\n\t"
+					   "addze	%1,%4;"
+					   : "=&r"(r0),"=&r"(dst) 
+					   : "r"(r1),"r"(ffff),"r"(zero));
+			  PRINT_GPR1C("addme  ",1,(int)dst,i,r0));
+
+	ITERATE1i(__asm__ ("adde    %1,%3,%3;\n\t"
+					   "subfme  %0,%2;\n\t"
+					   "addze	%1,%4;" 
+					   : "=&r"(r0),"=&r"(dst) 
+					   : "r"(r1),"r"(ffff),"r"(zero));
+			  PRINT_GPR1C("subfme ",1,(int)dst,i,r0));
+
+	ITERATE1i(__asm__ ("adde    %1,%3,%3;\n\t"
+					   "addze   %0,%2;\n\t"
+					   "addze	%1,%4;" 
+					   : "=&r"(r0),"=&r"(dst) 
+					   : "r"(r1),"r"(ffff),"r"(zero));
+			  PRINT_GPR1C("addze  ",1,(int)dst,i,r0));
+
+	ITERATE1i(__asm__ ("adde    %1,%3,%3;\n\t"
+					   "subfze  %0,%2;\n\t"
+					   "addze	%1,%4;" 
+					   : "=&r"(r0),"=&r"(dst) 
+					   : "r"(r1),"r"(ffff),"r"(zero));
+			  PRINT_GPR1C("subfze ",1,(int)dst,i,r0));
+
+	//set the carry bit to 0 and test the integer arithmetic instructions that use it
+	ITERATE2i(__asm__ ("adde    %1,%4,%4;\n\t"
+					   "adde    %0,%2,%3;\n\t"
+					   "addze	%1,%5;" 
+					   : "=&r"(r0),"=&r"(dst) 
+					   : "r"(r1), "r"(r2),"r"(small),"r"(zero));
+			  PRINT_GPR2C("adde   ",0,(int)dst,i,j,r0));
+
+	ITERATE2i(__asm__ ("adde    %1,%4,%4;\n\t"
+					   "subfe   %0,%2,%3;\n\t"
+					   "addze	%1,%5;" 
+					   : "=&r"(r0),"=&r"(dst) 
+					   : "r"(r1), "r"(r2),"r"(small),"r"(zero));
+			  PRINT_GPR2C("subfe  ",0,(int)dst,i,j,r0));
+
+	ITERATE1i(__asm__ ("adde    %1,%3,%3;\n\t"
+					   "addme   %0,%2;\n\t"
+					   "addze	%1,%4;" 
+					   : "=&r"(r0),"=&r"(dst) 
+					   : "r"(r1),"r"(small),"r"(zero));
+		      PRINT_GPR1C("addme  ",0,(int)dst,i,r0));
+
+	ITERATE1i(__asm__ ("adde    %1,%3,%3;\n\t"
+					   "subfme  %0,%2;\n\t"
+					   "addze	%1,%4;" 
+					   : "=&r"(r0),"=&r"(dst) 
+					   : "r"(r1),"r"(small),"r"(zero));
+		      PRINT_GPR1C("subfme ",0,(int)dst,i,r0));
+
+	ITERATE1i(__asm__ ("adde    %1,%3,%3;\n\t"
+					   "addze   %0,%2;\n\t"
+					   "addze	%1,%4;" 
+					   : "=&r"(r0),"=&r"(dst) 
+					   : "r"(r1),"r"(small),"r"(zero));
+			  PRINT_GPR1C("addze  ",0,(int)dst,i,r0));
+
+	ITERATE1i(__asm__ ("adde    %1,%3,%3;\n\t"
+					   "subfze  %0,%2;\n\t"
+					   "addze	%1,%4;" 
+					   : "=&r"(r0),"=&r"(dst) 
+					   : "r"(r1),"r"(small),"r"(zero));
+			  PRINT_GPR1C("subfze ",0,(int)dst,i,r0));
+
+
+
+
 	ITERATE2i(__asm__ ("mullw   %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("mullw  ",i,j,r0));
 	ITERATE2i(__asm__ ("mulld   %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("mulld  ",i,j,r0));
 	ITERATE2i(__asm__ ("mulhw   %0,%1,%2" : "=r"(r0) : "r"(r1), "r"(r2));  PRINT_GPR2("mulhw  ",i,j,r0));
