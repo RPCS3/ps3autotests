@@ -3,9 +3,12 @@
 #include <float.h>
 #include <ppu_intrinsics.h>
 
-#define PRINT_FPR1(name,i,FPR) printf(name "[%02d] -> %016llx\n", i, *(unsigned long long*)&FPR);
-#define PRINT_FPR2(name,i,j,FPR) printf(name "[%02d],[%02d]) -> %016llx\n", i, j, *(unsigned long long*)&FPR);
-#define PRINT_FPR3(name,i,j,k,FPR) printf(name "[%02d],[%02d],[%02d]) -> %016llx\n", i, j, k, *(unsigned long long*)&FPR);
+#define PRINT_FPR1(name,i,FPR) if (sizeof(FPR)==4) printf(name "[%02d] -> %08x\n", i, *(int*)&FPR);\
+      else printf(name "[%02d] -> %016llx\n", i, *(unsigned long long*)&FPR);
+#define PRINT_FPR2(name,i,j,FPR) if (sizeof(FPR)==4) printf(name "[%02d],[%02d]) -> %08x\n", i, j, *(int*)&FPR);\
+      else printf(name "[%02d],[%02d]) -> %016llx\n", i, j, *(unsigned long long*)&FPR);
+#define PRINT_FPR3(name,i,j,k,FPR) if (sizeof(FPR)==4) printf(name "[%02d],[%02d],[%02d]) -> %08x\n", i, j, k, *(int*)&FPR);\
+      else printf(name "[%02d],[%02d],[%02d]) -> %016llx\n", i, j, k, *(unsigned long long*)&FPR);
 
 // Loops with floats
 #define ITERATE1f(x) \
@@ -99,10 +102,10 @@ int main(void)
 	ITERATE1f(__asm__ ("fctiwz  %0,%1" : "=f"(f0) : "f"(f1));  PRINT_FPR1("fctiwz ",i,f0));
 
 	// Floating-Point Compare Instructions
-	ITERATE2d(__asm__ ("fcmpu   %0,%1,%2" : "=f"(d0) : "f"(d1), "f"(d2));  PRINT_FPR2("fcmpu ",i,j,d0));
-	ITERATE2f(__asm__ ("fcmpu   %0,%1,%2" : "=f"(f0) : "f"(f1), "f"(f2));  PRINT_FPR2("fcmpu ",i,j,f0));
-	ITERATE2d(__asm__ ("fcmpo   %0,%1,%2" : "=f"(d0) : "f"(d1), "f"(d2));  PRINT_FPR2("fcmpo ",i,j,d0));
-	ITERATE2f(__asm__ ("fcmpo   %0,%1,%2" : "=f"(f0) : "f"(f1), "f"(f2));  PRINT_FPR2("fcmpo ",i,j,f0));
+	ITERATE2d(__asm__ ("fcmpu   1,%1,%2\n" "mffs %0" : "=f"(d0) : "f"(d1), "f"(d2));  PRINT_FPR2("fcmpu ",i,j,d0));
+	ITERATE2f(__asm__ ("fcmpu   1,%1,%2\n" "mffs %0" : "=f"(f0) : "f"(f1), "f"(f2));  PRINT_FPR2("fcmpu ",i,j,f0));
+	ITERATE2d(__asm__ ("fcmpo   1,%1,%2\n" "mffs %0" : "=f"(d0) : "f"(d1), "f"(d2));  PRINT_FPR2("fcmpo ",i,j,d0));
+	ITERATE2f(__asm__ ("fcmpo   1,%1,%2\n" "mffs %0" : "=f"(f0) : "f"(f1), "f"(f2));  PRINT_FPR2("fcmpo ",i,j,f0));
 
 	// Floating-Point Status and Control Register Instructions
 	// TODO ?
