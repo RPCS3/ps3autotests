@@ -15,3 +15,7 @@
 # Uninteresting Log files
 *.ps3
 *.rpcs3
+
+# Uninteresting Source files
+tests/rsx/rsx_fp_dynamic/*.cpp
+tests/rsx/rsx_fp_static/*.cpp

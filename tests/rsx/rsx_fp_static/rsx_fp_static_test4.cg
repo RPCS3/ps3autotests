@@ -1,0 +1,384 @@
+// Shader: Translated to CG from: https://www.shadertoy.com/view/lds3RX (Spheres/Plane by mu6k)
+
+struct v2fConnector
+{
+	float4 projCoord : POSITION;
+	float4 color     : COLOR0;
+	float4 tex       : TEX0;
+};
+
+struct f2fConnector
+{
+	float4 COL0 : COLOR0;
+};
+
+// Defines
+#define occlusion_enabled
+#define occlusion_pass1_quality 40
+#define occlusion_pass2_quality 8
+#define noise2_use_smoothstep
+#define object_count 8
+#define object_speed_modifier 1.0
+#define render_steps 128
+
+// GLSL variables
+float iGlobalTime = 2.0;
+
+// Functions
+float hash(float x) // Decent hash for noise2 generation
+{
+	return frac(sin(x*.0127863)*17143.321);
+}
+
+float hash(float2 x)
+{
+	return frac(cos(dot(x.xy,float2(2.31,53.21))*124.123)*412.0); 
+}
+
+float hashlerp(float x0, float x1, float interp)
+{
+	x0 = hash(x0);
+	x1 = hash(x1);
+	#ifdef noise2_use_smoothstep
+	interp = smoothstep(0.0,1.0,interp);
+	#endif
+	return lerp(x0,x1,interp);
+}
+
+float hashlerp(float2 p0, float2 p1, float2 interp)
+{
+	float v0 = hashlerp(p0[0]+p0[1]*128.0,p1[0]+p0[1]*128.0,interp[0]);
+	float v1 = hashlerp(p0[0]+p1[1]*128.0,p1[0]+p1[1]*128.0,interp[0]);
+	#ifdef noise2_use_smoothstep
+	interp = smoothstep(float2(0.0),float2(1.0),interp);
+	#endif
+	return lerp(v0,v1,interp[1]);
+}
+
+float hashlerp(float3 p0, float3 p1, float3 interp)
+{
+	float v0 = hashlerp(p0.xy+float2(p0.z*143.0,0.0),p1.xy+float2(p0.z*143.0,0.0),interp.xy);
+	float v1 = hashlerp(p0.xy+float2(p1.z*143.0,0.0),p1.xy+float2(p1.z*143.0,0.0),interp.xy);
+	#ifdef noise2_use_smoothstep
+	interp = smoothstep(float3(0.0),float3(1.0),interp);
+	#endif
+	return lerp(v0,v1,interp[2]);
+}
+
+float noise2(float3 p) // 3D noise2
+{
+	float3 pm = fmod(p,1.0);
+	float3 pd = p-pm;
+	return hashlerp(pd,(pd+float3(1.0,1.0,1.0)), pm);
+}
+
+float3 cc(float3 color, float factor,float factor2) // Color modifier
+{
+	float w = color.x+color.y+color.z;
+	return lerp(color,float3(w)*factor,w*factor2);
+}
+
+
+float3 rotate_z(float3 v, float angle)
+{
+	float ca = cos(angle); float sa = sin(angle);
+	return mul(v,float3x3(
+		+ca, -sa, +.0,
+		+sa, +ca, +.0,
+		+.0, +.0,+1.0));
+}
+
+float3 rotate_y(float3 v, float angle)
+{
+	float ca = cos(angle); float sa = sin(angle);
+	return mul(v,float3x3(
+		+ca, +.0, -sa,
+		+.0,+1.0, +.0,
+		+sa, +.0, +ca));
+}
+
+float3 rotate_x(float3 v, float angle)
+{
+	float ca = cos(angle); float sa = sin(angle);
+	return mul(v,float3x3(
+		+1.0, +.0, +.0,
+		+.0, +ca, -sa,
+		+.0, +sa, +ca));
+}
+
+float spheres(float3 p)
+{
+	p.xz += float2(2.0);
+	p.xz = fmod(p.xz,float2(4.0));
+	p.xz -= float2(2.0);
+	float d = length(p)-1.0;	
+	return d;
+}
+
+float flr(float3 p)
+{
+	return p.y+1.0;
+}
+
+float dist(float3 p) // Distance function
+{
+	float t = iGlobalTime+4.0;
+	float d = 1000.0;
+	
+	d = min(spheres(p),flr(p));
+	return d;
+}
+
+float amb_occ(float3 p)
+{
+	float acc=0.0;
+	#define ambocce 0.2
+
+	acc+=dist(p+float3(-ambocce,-ambocce,-ambocce));
+	acc+=dist(p+float3(-ambocce,-ambocce,+ambocce));
+	acc+=dist(p+float3(-ambocce,+ambocce,-ambocce));
+	acc+=dist(p+float3(-ambocce,+ambocce,+ambocce));
+	acc+=dist(p+float3(+ambocce,-ambocce,-ambocce));
+	acc+=dist(p+float3(+ambocce,-ambocce,+ambocce));
+	acc+=dist(p+float3(+ambocce,+ambocce,-ambocce));
+	acc+=dist(p+float3(+ambocce,+ambocce,+ambocce));
+	return 0.5+acc /(16.0*ambocce);
+}
+
+float occ(float3 start, float3 light_pos, float size)
+{
+	float3 dir = light_pos-start;
+	float total_dist = length(dir);
+	dir = dir/total_dist;
+	
+	float travel = .1;
+	float o = 1.0;
+	float3 p=start;
+	
+	float search_travel=.0;
+	float search_o=1.0;
+	float e = .5*total_dist/float(occlusion_pass1_quality);
+	
+	// Pass 1 fixed step search
+	for (int i=0; i<occlusion_pass1_quality; i++)
+	{
+		travel = (float(i)+0.5)*total_dist/float(occlusion_pass1_quality);
+		float cd = dist(start+travel*dir);
+		float co = cd/travel*total_dist*size;
+		if (co<search_o)
+		{
+			search_o=co;
+			search_travel=travel;
+			if (co<.0)
+				break;
+		}
+	}
+	
+	// Pass 2 tries to find a better match in close proximity to the result from the previous pass
+	for (int i=0; i<occlusion_pass2_quality; i++)
+	{
+		float tr = search_travel+e;
+		float oc = dist(start+tr*dir)/tr*total_dist*size;
+		if (tr<.0||tr>total_dist)
+			break;
+
+		if (oc<search_o)
+		{
+			search_o = oc;
+			search_travel = tr;
+		}
+		e=e*-.75;
+	}
+	o=max(search_o,.0);
+	return o;
+}
+
+float occ(float3 start, float3 light_pos, float size, float dist_to_scan)
+{
+	float3 dir = light_pos-start;
+	float total_dist = length(dir);
+	dir = dir/total_dist;
+	
+	float travel = .1;
+	float o = 1.0;
+	float3 p=start;
+	
+	float search_travel=.0;
+	float search_o=1.0;
+	float e = .5*dist_to_scan/float(occlusion_pass1_quality);
+	
+	// Pass 1 fixed step search
+	for (int i=0; i<occlusion_pass1_quality; i++)
+	{
+		travel = (float(i)+0.5)*dist_to_scan/float(occlusion_pass1_quality);
+		float cd = dist(start+travel*dir);
+		float co = cd/travel*total_dist*size;
+		if (co<search_o)
+		{
+			search_o=co;
+			search_travel=travel;
+			if (co<.0)
+				break;
+		}	
+	}
+	
+	// Pass 2 tries to find a better match in close proximity to the result from the previous pass
+	for (int i=0; i<occlusion_pass2_quality; i++)
+	{
+		float tr = search_travel+e;
+		float oc = dist(start+tr*dir)/tr*total_dist*size;
+		if (tr<.0||tr>total_dist)
+			break;
+
+		if (oc<search_o)
+		{
+			search_o = oc;
+			search_travel = tr;
+		}
+		e = e*-.75;
+	}
+	
+	o = max(search_o,.0);
+	return o;
+}
+
+float3 normal(float3 p,float e) // Returns the normal, uses the distance function
+{
+	float d = dist(p);
+	return normalize(float3(dist(p+float3(e,0,0))-d,dist(p+float3(0,e,0))-d,dist(p+float3(0,0,e))-d));
+}
+
+float3 background(float3 p,float3 d) // Render background
+{
+	d=rotate_z(d,-1.0);
+	float3 color = lerp(float3(.9,.6,.2),float3(.1,.4,.8),d.y*.5+.5);
+	return color*(noise2(d)+.1*pow(noise2(d*4.0),4.0));
+}
+
+float noise2(float p)
+{
+	float pm = fmod(p,1.0);
+	float pd = p-pm;
+	return hashlerp(pd,pd+1.0,pm);
+}
+
+float noise2(float2 p)
+{
+	float2 pm = fmod(p,1.0);
+	float2 pd = p-pm;
+	return hashlerp(pd,(pd+float2(1.0,1.0)), pm);
+}
+
+float3 object_material(float3 p, float3 d) // Computes the material for the object
+{
+	float3 n = normal(p,.02); // Normal vector
+	float3 r = reflect(d,n);  // Reflect vector
+	float ao = amb_occ(p);    // Fake ambient occlusion
+	float3 color = float3(.0,.0,.0); // Variable to hold the color
+	float reflectance = 1.0+dot(d,n);
+	
+	float or = occ(p,p+r*10.0,0.5,10.0);
+	float3 diffuse_acc = float3(.0);
+	float t = iGlobalTime*.1;
+	
+	for (int i=0; i<3; i++)
+	{
+		float fi = float(i);
+		float3 offs = float3(
+			-sin(5.0*(1.0+fi)*123.4+t),
+			-sin(4.0*(1.0+fi)*723.4+t),
+			-sin(3.0*(1.0+fi)*413.4+t));
+	
+		float3 lp = offs*4.0;
+		float3 ld = normalize(lp-p);
+		
+		float diffuse = dot(ld,n);
+		float od=.0;
+		if (diffuse>.0)
+			od = occ(p,lp,1.1);
+		
+		float spec = pow(dot(r,ld)*.5+.5,100.0);	
+		float3 icolor = float3(1.0)*diffuse*od + float3(spec)*od*reflectance;
+		diffuse_acc += icolor;
+	}
+	if(spheres(p)<flr(p))
+	{
+		float3 tex = float3(0.6, 0.0, 0.0);
+		tex *= float3(.5,.5,.7);
+		color = tex*diffuse_acc+background(p,r)*(.1+or*reflectance)*1.8;
+	}
+	else
+	{
+		float3 tex = float3(0.6, 0.3, 0.1);
+		color = tex*diffuse_acc+background(p,r)*(.1+or*reflectance)*1.5;
+	}
+	return color*min(ao*1.9,1.0)*.8;
+}
+
+// Main
+f2fConnector main
+(
+	v2fConnector v2f
+)
+{
+	// GLSL variables
+	#define WIDTH 720.0
+	#define HEIGHT 480.0
+	float3 iResolution = float3(WIDTH, HEIGHT, 1.0);
+	float4 gl_FragCoord = float4(v2f.tex.x*WIDTH, v2f.tex.y*HEIGHT, 1.0, 0.0);
+	float4 gl_FragColor;
+
+	f2fConnector f2f;
+
+	// Shader: Translated to CG from: https://www.shadertoy.com/view/lds3RX (Spheres/Plane by mu6k)
+	float2 uv = gl_FragCoord.xy / iResolution.xy - 0.5;
+	uv.x *= iResolution.x/iResolution.y; //fix aspect ratio
+	float3 mouse = float3(-0.5, -0.5, -0.5);
+	
+	float t = iGlobalTime*.5*object_speed_modifier + 30.0;
+	mouse += float3(sin(t)*.05,sin(t)*.01,.0);
+	
+	float offs0=5.0;
+	float offs1=1.0;
+	
+	// Setup the camera
+	float3 p = float3(.0,0.0,-1.0);
+	p = rotate_x(p,mouse.y*9.0+offs0);
+	p = rotate_y(p,mouse.x*9.0+offs1);
+	p *= (abs(p.y*2.0+1.0)+1.0);
+	float3 d = float3(uv,1.0);
+	d.z -= length(d)*.6; // Lens distort
+	d = normalize(d);
+	d = rotate_x(d,mouse.y*9.0+offs0);
+	d = rotate_y(d,mouse.x*9.0+offs1);
+	
+	float3 sp = p;
+	float3 color;
+	float dd,td;
+	
+	// Raymarcing 
+	for (int i=0; i<render_steps; i++)
+	{
+		dd = dist(p);
+		p+=d*dd;
+		td+=dd;
+		if (dd>5.0) break;
+	}
+	
+	if (dd<0.1)
+		color = object_material(p,d);
+	else
+		color = background(p,d);
+	
+	color = lerp(background(p,d),color,1.0/(td*.1+1.0));
+	color = lerp(color*color,color,1.4);
+	color *=.8;
+	color -= length(uv)*.1;
+	color = cc(color,.5,.5);
+	color += hash(uv.xy+color.xy)*.02;
+	gl_FragColor = float4(color,1.0);
+
+	// Return
+	f2f.COL0 = gl_FragColor;
+	return f2f;
+}

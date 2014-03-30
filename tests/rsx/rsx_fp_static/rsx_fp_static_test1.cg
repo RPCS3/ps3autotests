@@ -1,0 +1,22 @@
+struct v2fConnector
+{
+	float4 projCoord : POSITION;
+	float4 color     : COLOR0;
+	float4 tex       : TEX0;
+};
+
+struct f2fConnector
+{
+	float4 COL0 : COLOR0;
+};
+
+f2fConnector main
+(
+	v2fConnector v2f
+)
+{
+	f2fConnector f2f;
+
+	f2f.COL0   = float4(0.0f, v2f.tex.y, v2f.tex.x, 1.0f);
+	return f2f;
+}

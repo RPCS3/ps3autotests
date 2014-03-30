@@ -1,0 +1,128 @@
+// Shader: Translated to CG from: https://www.shadertoy.com/view/MdXGDr (Data Transfer by srtuss)
+
+struct v2fConnector
+{
+	float4 projCoord : POSITION;
+	float4 color     : COLOR0;
+	float4 tex       : TEX0;
+};
+
+struct f2fConnector
+{
+	float4 COL0 : COLOR0;
+};
+
+// GLSL variables
+float iGlobalTime = 2.0;
+
+// Functions
+float2 rotate(float2 k, float t)
+{
+	return float2(cos(t) * k.x - sin(t) * k.y, sin(t) * k.x + cos(t) * k.y);
+}
+
+float hexagon(float3 p, float2 h)
+{
+	float3 q = abs(p);
+	return max(q.z - h.y, max(q.x + q.y * 0.57735, q.y * 1.1547) - h.x);
+}
+
+float scene(float3 pi)
+{
+	float slices = cos(iGlobalTime * 0.8) * 0.3 + 0.4;
+
+	// Twist the wires
+	float a = sin(pi.z * 0.3) * 2.0;
+	float3 pr = float3(rotate(pi.xy, a), pi.z);
+	
+	// Move individual wires
+	float3 id = floor(pr);
+	pr.z += sin(id.x * 10.0 + id.y * 20.0) * iGlobalTime * 2.0;
+	
+	// Calculate distance
+	float3 p = frac(pr);
+	p -= 0.5;
+	
+	// This makes hollow wires
+	//return max(hexagon(p, vec2(0.3, slices)), -hexagon(p, vec2(0.2, slices + 0.05)));
+	
+	return hexagon(p, float2(0.3, slices));
+}
+
+float3 norm(float3 p)
+{
+	// The normal is simply the gradient of the volume
+	float4 dim = float4(1, 1, 1, 0) * 0.01;
+	float3 n;
+	n.x = scene(p - dim.xww) - scene(p + dim.xww);
+	n.y = scene(p - dim.wyw) - scene(p + dim.wyw);
+	n.z = scene(p - dim.wwz) - scene(p + dim.wwz);
+	return normalize(n);
+}
+
+
+// Main
+f2fConnector main
+(
+	v2fConnector v2f
+)
+{
+	// GLSL variables
+	#define WIDTH 720.0
+	#define HEIGHT 480.0
+	float3 iResolution = float3(WIDTH, HEIGHT, 1.0);
+	float4 gl_FragCoord = float4(v2f.tex.x*WIDTH, v2f.tex.y*HEIGHT, 1.0, 0.0);
+	float4 gl_FragColor;
+
+	f2fConnector f2f;
+
+	// Shader: Translated to CG from: https://www.shadertoy.com/view/MdXGDr (Data Transfer by srtuss)
+	float slices = cos(iGlobalTime * 0.8) * 0.3 + 0.4;
+	float2 pos = gl_FragCoord.xy / iResolution.xy;
+	float2 p = -1.0 + 2.0 * pos;
+	float3 dir = normalize(float3(p * float2(1.77, 1.0), 1.0));
+	
+	// Camera
+	dir.zx = rotate(dir.zx, sin(iGlobalTime * 0.5) * 0.4);
+	dir.xy = rotate(dir.xy, iGlobalTime * 0.2);
+	float3 ray = float3(0.0, 0.0, 0.0 - iGlobalTime * 0.9);
+	
+	// Raymarching
+	float t = 0.0;
+	for(int i = 0; i < 90; i ++)
+	{
+		float k = scene(ray + dir * t);
+		t += k * 0.75;
+	}
+	float3 hit = ray + dir * t;
+	
+	// Fog
+	float fogFact = clamp(exp(-distance(ray, hit) * 0.3), 0.0, 1.0);
+	
+	if(fogFact < 0.05)
+	{
+		gl_FragColor = float4(0.0, 0.0, 0.0, 1.0);
+	}
+	else
+	{
+		// Diffuse & specular light
+		float3 sun = normalize(float3(0.1, 1.0, 0.2));
+		float3 n = norm(hit);
+		float3 ref = reflect(normalize(hit - ray), n);
+		float diff = dot(n, sun);
+		float spec = pow(max(dot(ref, sun), 0.0), 32.0);
+		float3 col = lerp(float3(0.0, 0.7, 0.9), float3(0.0, 0.1, 0.2), diff);
+	
+		// Enviroment map
+		col = fogFact * (col + spec);
+	
+		// iq's vignetting
+		col *= 0.1 + 0.8 * pow(16.0 * pos.x * pos.y * (1.0 - pos.x) * (1.0 - pos.y), 0.1);
+	
+		gl_FragColor = float4(col, 1.0);
+	}
+
+	// Return
+	f2f.COL0 = gl_FragColor;
+	return f2f;
+}
