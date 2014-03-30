@@ -1,0 +1,83 @@
+// Shader: Translated to CG from: https://www.shadertoy.com/view/ldf3DN (Mandelbrot - orbit traps by iq)
+
+struct v2fConnector
+{
+    float4 projCoord : POSITION;
+    float4 color     : COLOR0;
+    float4 tex       : TEX0;
+};
+
+struct f2fConnector
+{
+  float4 COL0 : COLOR0;
+};
+
+// Main
+f2fConnector main
+(
+    v2fConnector v2f,
+	uniform float iGlobalTime,
+	uniform float2 iGamePad
+)
+{
+	// GLSL variables
+	#define WIDTH 720.0
+	#define HEIGHT 480.0
+	float3 iResolution = float3(WIDTH, HEIGHT, 1.0);
+	float4 gl_FragCoord = float4(v2f.tex.x*WIDTH, v2f.tex.y*HEIGHT, 1.0, 0.0);
+	float4 gl_FragColor;
+
+    f2fConnector f2f;
+
+	// Shader: Translated to CG from: https://www.shadertoy.com/view/ldf3DN (Mandelbrot - orbit traps by iq)
+	float2 p = -1.0 + 2.0 * gl_FragCoord.xy / iResolution.xy;
+    p.x *= iResolution.x/iResolution.y;
+
+	float zoo = 1.0/250.0;
+	zoo = 1.0/(400.0 - 150.0*sin(0.15*iGlobalTime-0.3));
+	
+	float2 cc = float2(-0.533516,0.526141) + p*zoo;
+	float2 t2c = float2(-0.5,2.0);
+	t2c += 0.5*float2( cos(0.13*(iGlobalTime-10.0)), sin(0.13*(iGlobalTime-10.0)) );
+		
+    // Iterate
+    float2 z  = float2(0.0);
+    float2 dz = float2(0.0);
+	float trap1 = 0.0;
+	float trap2 = 1e20;
+	float co2 = 0.0;
+    for (int i=0; i<150; i++)
+    {
+        if( dot(z,z)>1024.0 ) continue;
+
+		// Z' -> 2·Z·Z' + 1
+        dz = 2.0*float2(z.x*dz.x-z.y*dz.y, z.x*dz.y + z.y*dz.x ) + float2(1.0,0.0);
+			
+        // Z -> Z² + c			
+        z = cc + float2( z.x*z.x - z.y*z.y, 2.0*z.x*z.y );
+			
+        // Trap 1
+		float d1 = abs(dot(z-float2(0.0,1.0),float2(0.707)));
+		float ff = step( d1, 1.0 );
+		co2 += ff;
+		trap1 += ff*d1;
+
+		// Trap2
+		trap2 = min( trap2, dot(z-t2c,z-t2c) );
+    }
+
+    // Distance, d(c) = |Z|·log|Z|/|Z'|
+	float d = sqrt( dot(z,z)/dot(dz,dz) )*log(dot(z,z));
+	float c1 = pow( clamp( 2.00*d/zoo,    0.0, 1.0 ), 0.5 );
+	float c2 = pow( clamp( 1.5*trap1/co2, 0.0, 1.0 ), 2.0 );
+	float c3 = pow( clamp( 0.4*trap2, 0.0, 1.0 ), 0.25 );
+
+	float3 col1 = 0.5 + 0.5*sin( 3.0 + 4.0*c2 + float3(0.0,0.5,1.0) );
+	float3 col2 = 0.5 + 0.5*sin( 4.1 + 2.0*c3 + float3(1.0,0.5,0.0) );
+	float3 col = 2.0*sqrt(c1*col1*col2);
+	gl_FragColor = float4( col, 1.0 );
+
+	// Return
+    f2f.COL0 = gl_FragColor;
+    return f2f;
+}

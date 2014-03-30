@@ -1,0 +1,31 @@
+struct v2fConnector
+{
+    float4 projCoord : POSITION;
+    float4 color     : COLOR0;
+    float4 tex       : TEX0;
+};
+
+struct f2fConnector
+{
+  float4 COL0 : COLOR0;
+};
+
+f2fConnector main
+(
+    v2fConnector v2f,
+	uniform float iGlobalTime,
+	uniform float2 iGamePad
+)
+{
+	// GLSL variables
+	#define WIDTH 720.0
+	#define HEIGHT 480.0
+	float3 iResolution = float3(WIDTH, HEIGHT, 1.0);
+	float4 gl_FragCoord = float4(v2f.tex.x*WIDTH, v2f.tex.y*HEIGHT, 1.0, 0.0);
+
+    f2fConnector f2f;
+	
+	float test = fmod(iGlobalTime, 1.0);
+    f2f.COL0   = float4(test, iGamePad.xy / iResolution.xy, 1.0f);
+    return f2f;
+}
