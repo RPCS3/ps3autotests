@@ -66,14 +66,14 @@
 	for (unsigned int i=0; i<sizeof(testInts)/sizeof(int); i++) { \
 		volatile vec_int4 v1 = (vec_int4)(testInts[i]); \
 		volatile vec_float4 r  = (vec_float4)instruction((qword)v1, imm); \
-		spu_printf(name"([%02d]) -> %08x %08x %08x %08x\n",i,r[0],r[1],r[2],r[3]); \
+		spu_printf(name"([%02d],%d) -> %08x %08x %08x %08x\n",i,imm,r[0],r[1],r[2],r[3]); \
 	}
 
 #define ITERATE1fimm(name, instruction, imm) \
 	for (unsigned int i=0; i<sizeof(testFloats)/sizeof(float); i++) { \
 		volatile vec_float4 v1 = (vec_float4)(testFloats[i]); \
 		volatile vec_int4 r  = (vec_int4)instruction((qword)v1, imm); \
-		spu_printf(name"([%02d]) -> %08x %08x %08x %08x\n",i,r[0],r[1],r[2],r[3]); \
+		spu_printf(name"([%02d],%d) -> %08x %08x %08x %08x\n",i,imm,r[0],r[1],r[2],r[3]); \
 	}
 
 
