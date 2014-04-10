@@ -165,7 +165,7 @@ int main()
 	ITERATE1i("xshw    ", si_xshw);
 	ITERATE1i("xswd    ", si_xswd);
 	ITERATE3i("selb    ", si_selb);
-	ITERATE3i("shufb   ", si_selb);
+	ITERATE3i("shufb   ", si_shufb);
 
 
 	///////////////////////////////////
@@ -264,8 +264,8 @@ int main()
 	ITERATE2i("ceq     ", si_ceq);
 	ITERATE1iimm("ceqbi   ", si_ceqbi, 0);
 	ITERATE1iimm("ceqbi   ", si_ceqbi, 1);
-	ITERATE1iimm("ceqbi   ", si_ceqbi, 511);
-	ITERATE1iimm("ceqbi   ", si_ceqbi, -512);
+	ITERATE1iimm("ceqbi   ", si_ceqbi, 255);
+	ITERATE1iimm("ceqbi   ", si_ceqbi, -128);
 	ITERATE1iimm("ceqhi   ", si_ceqhi, 0);
 	ITERATE1iimm("ceqhi   ", si_ceqhi, 1);
 	ITERATE1iimm("ceqhi   ", si_ceqhi, 511);
@@ -281,8 +281,8 @@ int main()
 	ITERATE2i("cgt     ", si_cgt);
 	ITERATE1iimm("cgtbi   ", si_cgtbi, 0);
 	ITERATE1iimm("cgtbi   ", si_cgtbi, 1);
-	ITERATE1iimm("cgtbi   ", si_cgtbi, 511);
-	ITERATE1iimm("cgtbi   ", si_cgtbi, -512);
+	ITERATE1iimm("cgtbi   ", si_cgtbi, 255);
+	ITERATE1iimm("cgtbi   ", si_cgtbi, -128);
 	ITERATE1iimm("cgthi   ", si_cgthi, 0);
 	ITERATE1iimm("cgthi   ", si_cgthi, 1);
 	ITERATE1iimm("cgthi   ", si_cgthi, 511);
@@ -298,8 +298,8 @@ int main()
 	ITERATE2i("clgt    ", si_clgt);
 	ITERATE1iimm("clgtbi  ", si_clgtbi, 0);
 	ITERATE1iimm("clgtbi  ", si_clgtbi, 1);
-	ITERATE1iimm("clgtbi  ", si_clgtbi, 511);
-	ITERATE1iimm("clgtbi  ", si_clgtbi, -512);
+	ITERATE1iimm("clgtbi  ", si_clgtbi, 255);
+	ITERATE1iimm("clgtbi  ", si_clgtbi, -128);
 	ITERATE1iimm("clgthi  ", si_clgthi, 0);
 	ITERATE1iimm("clgthi  ", si_clgthi, 1);
 	ITERATE1iimm("clgthi  ", si_clgthi, 511);
