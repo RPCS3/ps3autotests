@@ -12,6 +12,20 @@ struct f2fConnector
 	float4 COL0 : COLOR0;
 };
 
+// GLSL mod
+float mod(float x, float y)
+{
+	return x - y * floor(x/y);
+}
+float2 mod(float2 x, float y)
+{
+	return x - y * floor(x/y);
+}
+float3 mod(float3 x, float y)
+{
+	return x - y * floor(x/y);
+}
+
 // Defines
 #define PI 3.14159265359
 
@@ -46,7 +60,7 @@ f2fConnector main
 	r *= 1.0 + 0.05*sin(r.x*5.) + 0.05*sin(r.y*3.);
 	r *= 1.0 + 0.2*length(r);
 	float side = 0.5;
-	float2 r2 = fmod(r, side);
+	float2 r2 = mod(r, side);
 	float2 r3 = r2-side/2.;
 	float i = floor(r.x/side)+2.;
 	float j = floor(r.y/side)+4.;

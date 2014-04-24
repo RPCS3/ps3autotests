@@ -12,6 +12,20 @@ struct f2fConnector
 	float4 COL0 : COLOR0;
 };
 
+// GLSL mod
+float mod(float x, float y)
+{
+	return x - y * floor(x/y);
+}
+float2 mod(float2 x, float y)
+{
+	return x - y * floor(x/y);
+}
+float3 mod(float3 x, float y)
+{
+	return x - y * floor(x/y);
+}
+
 // Defines
 #define occlusion_enabled
 #define occlusion_pass1_quality 40
@@ -67,7 +81,7 @@ float hashlerp(float3 p0, float3 p1, float3 interp)
 
 float noise2(float3 p) // 3D noise2
 {
-	float3 pm = fmod(p,1.0);
+	float3 pm = mod(p,1.0);
 	float3 pd = p-pm;
 	return hashlerp(pd,(pd+float3(1.0,1.0,1.0)), pm);
 }
@@ -109,7 +123,7 @@ float3 rotate_x(float3 v, float angle)
 float spheres(float3 p)
 {
 	p.xz += float2(2.0);
-	p.xz = fmod(p.xz,float2(4.0));
+	p.xz = mod(p.xz,float2(4.0));
 	p.xz -= float2(2.0);
 	float d = length(p)-1.0;	
 	return d;
@@ -257,14 +271,14 @@ float3 background(float3 p,float3 d) // Render background
 
 float noise2(float p)
 {
-	float pm = fmod(p,1.0);
+	float pm = mod(p,1.0);
 	float pd = p-pm;
 	return hashlerp(pd,pd+1.0,pm);
 }
 
 float noise2(float2 p)
 {
-	float2 pm = fmod(p,1.0);
+	float2 pm = mod(p,1.0);
 	float2 pd = p-pm;
 	return hashlerp(pd,(pd+float2(1.0,1.0)), pm);
 }
