@@ -81,6 +81,32 @@ for y in range(img.size[0])[::-1]:
 w.close()
 
 
+#COMPRESSED_B8R8_G8R8
+w = open("Texture-COMPRESSED_B8R8_G8R8.raw", "wb")
+for y in range(img.size[0])[::-1]:
+    for x in range(0, img.size[1], 2):
+        b = (pix[x + 0, y][2] + pix[x + 1, y][2]) / 2
+        g = (pix[x + 0, y][1] + pix[x + 1, y][1]) / 2
+        w.write(chr(b))
+        w.write(chr(pix[x + 1, y][0]))
+        w.write(chr(g))
+        w.write(chr(pix[x + 0, y][0]))
+w.close()
+
+
+#COMPRESSED_R8B8_R8G8
+w = open("Texture-COMPRESSED_B8R8_G8R8.raw", "wb")
+for y in range(img.size[0])[::-1]:
+    for x in range(0, img.size[1], 2):
+        b = (pix[x + 0, y][2] + pix[x + 1, y][2]) / 2
+        g = (pix[x + 0, y][1] + pix[x + 1, y][1]) / 2
+        w.write(chr(pix[x + 1, y][0]))
+        w.write(chr(b))
+        w.write(chr(pix[x + 0, y][0]))
+        w.write(chr(g))
+w.close()
+
+
 #B8
 w = open("Texture-B8.raw", "wb")
 for y in range(img.size[0])[::-1]:
