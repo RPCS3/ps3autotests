@@ -95,7 +95,7 @@ w.close()
 
 
 #COMPRESSED_R8B8_R8G8
-w = open("Texture-COMPRESSED_B8R8_G8R8.raw", "wb")
+w = open("Texture-COMPRESSED_R8B8_R8G8.raw", "wb")
 for y in range(img.size[0])[::-1]:
     for x in range(0, img.size[1], 2):
         b = (pix[x + 0, y][2] + pix[x + 1, y][2]) / 2

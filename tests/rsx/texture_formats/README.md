@@ -1,4 +1,4 @@
-Before you run the test, make sure you run the `Texture_Generate.py` in order to generate all the remaining .RAW textures that will be used by the sample. In the end, following files should be present along the binary:
+Before you run the test, make sure you run the `Texture_Generate.py` in order to generate all the remaining .RAW textures that will be used by the sample. In the end, following files should be inside the */app_home/* folder:
 * *Texture-B8.raw*
 * *Texture-A1R5G5B5.raw*
 * *Texture-A4R4G4B4.raw*
