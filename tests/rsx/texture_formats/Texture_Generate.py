@@ -81,6 +81,14 @@ for y in range(img.size[0])[::-1]:
 w.close()
 
 
+#B8
+w = open("Texture-B8.raw", "wb")
+for y in range(img.size[0])[::-1]:
+    for x in range(img.size[1]):
+        w.write(chr(pix[x,y][2]))
+w.close()
+
+
 #COMPRESSED_B8R8_G8R8
 w = open("Texture-COMPRESSED_B8R8_G8R8.raw", "wb")
 for y in range(img.size[0])[::-1]:
@@ -107,11 +115,21 @@ for y in range(img.size[0])[::-1]:
 w.close()
 
 
-#B8
-w = open("Texture-B8.raw", "wb")
+#COMPRESSED_HILO8
+w = open("Texture-COMPRESSED_HILO8.raw", "wb")
 for y in range(img.size[0])[::-1]:
-    for x in range(img.size[1]):
-        w.write(chr(pix[x,y][2]))
+    for x in range(0, img.size[1]):
+        w.write(chr(255-y))
+        w.write(chr(x))
+w.close()
+
+
+#COMPRESSED_HILO_S8
+w = open("Texture-COMPRESSED_HILO_S8.raw", "wb")
+for y in range(img.size[0])[::-1]:
+    for x in range(0, img.size[1]):
+        w.write(chr(255-y))
+        w.write(chr(x))
 w.close()
 
 
@@ -201,6 +219,15 @@ for y in range(img.size[0])[::-1]:
         w.write(chr(Y & 0xFF))
         w.write(chr(X >> 8))
         w.write(chr(X & 0xFF))
+w.close()
+
+
+#X16
+w = open("Texture-X16.raw", "wb")
+for y in range(img.size[0])[::-1]:
+    for x in range(img.size[1]):
+        w.write(chr(pix[x,y][3]))
+        w.write('\x00')
 w.close()
 
 
