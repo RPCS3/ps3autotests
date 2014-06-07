@@ -2,13 +2,16 @@
 #include <math.h>
 #include <float.h>
 
-#define PRINT_GPR1(name,i,GPR) printf(name "([%02d]) -> %016llx\n", i, *(unsigned long long*)&GPR);
-#define PRINT_GPR2(name,i,j,GPR) printf(name "([%02d],[%02d]) -> %016llx\n", i, j, *(unsigned long long*)&GPR);
-#define PRINT_GPR3(name,i,j,k,GPR) printf(name "([%02d],[%02d],[%02d]) -> %016llx\n", i, j, k, *(unsigned long long*)&GPR);
-#define PRINT_GPR4(name,i,j,k,l,GPR) printf(name "([%02d],[%02d],[%02d],[%02d]) -> %016llx\n", i, j, k, l, *(unsigned long long*)&GPR);
+#define GET_XER() unsigned long long XER; __asm__ ("mfxer %0" : "=r"(XER) :)
+#define GET_CR() unsigned long long CR; __asm__ ("mfcr %0" : "=r"(CR) :)
 
-#define PRINT_GPR1C(name,cyin,cyout,i,GPR) printf(name "([%02d],[c%02d]) -> %016llx [c%02d]\n", i, cyin, *(unsigned long long*)&GPR, cyout);
-#define PRINT_GPR2C(name,cyin,cyout,i,j,GPR) printf(name "([%02d],[%02d],[c%02d]) -> %016llx [c%02d]\n", i, j, cyin, *(unsigned long long*)&GPR, cyout);
+#define PRINT_GPR1(name,i,GPR) do {GET_XER(); GET_CR(); printf(name "([%02d]) -> %016llx [%016llx : %016llx]\n", i, *(unsigned long long*)&GPR, XER, CR); } while(0)
+#define PRINT_GPR2(name,i,j,GPR) do {GET_XER(); GET_CR(); printf(name "([%02d],[%02d]) -> %016llx [%016llx : %016llx]\n", i, j, *(unsigned long long*)&GPR, XER, CR); } while(0)
+#define PRINT_GPR3(name,i,j,k,GPR) do {GET_XER(); GET_CR(); printf(name "([%02d],[%02d],[%02d]) -> %016llx [%016llx : %016llx]\n", i, j, k, *(unsigned long long*)&GPR, XER, CR); } while(0)
+#define PRINT_GPR4(name,i,j,k,l,GPR) do {GET_XER(); GET_CR(); printf(name "([%02d],[%02d],[%02d],[%02d]) -> %016llx [%016llx : %016llx]\n", i, j, k, l, *(unsigned long long*)&GPR, XER, CR); } while(0)
+
+#define PRINT_GPR1C(name,cyin,cyout,i,GPR) do {GET_XER(); GET_CR(); printf(name "([%02d],[c%02d]) -> %016llx [c%02d : [%016llx : %016llx]]\n", i, cyin, *(unsigned long long*)&GPR, cyout, XER, CR); } while(0)
+#define PRINT_GPR2C(name,cyin,cyout,i,j,GPR) do {GET_XER(); GET_CR(); printf(name "([%02d],[%02d],[c%02d]) -> %016llx [c%02d : [%016llx : %016llx]]\n", i, j, cyin, *(unsigned long long*)&GPR, cyout, XER, CR); } while(0)
 
 // Loops with 64-bit integers
 #define ITERATE1i(x) \
