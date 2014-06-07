@@ -20,3 +20,6 @@
 tests/rsx/rsx_fp_dynamic/*.cpp
 tests/rsx/rsx_fp_static/*.cpp
 tests/cpu/spu*/*.ppu.cpp
+
+# Uninteresting Tests
+misc/*
