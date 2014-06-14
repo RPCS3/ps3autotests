@@ -12,6 +12,24 @@
 *.la
 *.a
 
+# Visual Studio 2010 files
+*.sln
+*.suo
+*.sdf
+*.opensdf
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Uninteresting Objects
+fpshader.cg
+fpshader.fpo
+fpshader.ppu.o
+vpshader.cg
+vpshader.vpo
+vpshader.ppu.o
+Temp/
+
 # Uninteresting Log files
 *.ps3
 *.rpcs3
