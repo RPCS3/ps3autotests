@@ -1,0 +1,47 @@
+[*] Checking sys_semaphore_create errors:
+sys_semaphore_create: max_val < 0 returns: 0x80010002
+sys_semaphore_create: max_val == 0 returns: 0x80010002
+sys_semaphore_create: initial_val < 0 returns: 0x80010002
+sys_semaphore_create: initial_val > max_val returns: 0x80010002
+sys_semaphore_create: &sem == NULL returns: 0x8001000d
+sys_semaphore_create: &attr == NULL returns: 0x8001000d
+sys_semaphore_create: uninitialized attr returns: 0x80010002
+
+[*] Checking sys_semaphore_get_value errors:
+sys_semaphore_get_value: &val == NULL returns: 0x8001000d
+sys_semaphore_get_value: failed semaphore id returns: 0x80010005
+sys_semaphore_get_value: invalid semaphore id returns: 0x80010005
+
+[*] Checking sys_semaphore_wait errors:
+sys_semaphore_wait: short timeout returns: 0x8001000b
+sys_semaphore_wait: failed semaphore id returns: 0x80010005
+sys_semaphore_wait: invalid semaphore id returns: 0x80010005
+
+[*] Checking sys_semaphore_trywait errors:
+sys_semaphore_trywait: semaphore value <= 0 returns: 0x8001000a
+sys_semaphore_trywait: failed semaphore id returns: 0x80010005
+sys_semaphore_trywait: invalid semaphore id returns: 0x80010005
+
+[*] Checking sys_semaphore_post errors:
+sys_semaphore_post: failed semaphore id returns: 0x80010005
+sys_semaphore_post: invalid semaphore id returns: 0x80010005
+sys_semaphore_post: val < 0 returns: 0x80010002
+sys_semaphore_post: val > max_val returns: 0x8001000a
+
+[*] Checking sys_semaphore_destroy errors:
+sys_semaphore_destroy: failed semaphore id returns: 0x80010005
+sys_semaphore_destroy: invalid semaphore id returns: 0x80010005
+sys_semaphore_destroy: destroyed semaphore id returns: 0x80010005
+
+[*] Testing sys_semaphore_get_value and sys_semaphore_(try)wait:
+sys_semaphore_get_value: 0x2
+sys_semaphore_get_value: 0x1
+sys_semaphore_get_value: 0x0
+
+[*] Testing sys_semaphore_post and sys_semaphore_wait:
+sys_semaphore_wait: Thread woke up successfully
+sys_semaphore_get_value: 0x0
+sys_semaphore_wait: Thread woke up successfully
+sys_semaphore_wait: Thread woke up successfully
+sys_semaphore_get_value: 0x0
+sys_semaphore_get_value: 0x0
