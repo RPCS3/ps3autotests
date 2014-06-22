@@ -51,7 +51,7 @@ cellGcmSetDrawArrays(CELL_GCM_PRIMITIVE_POLYGON, 102, 6);
 cellGcmSetPolygonStippleEnable(CELL_GCM_FALSE);
 ```
 
-The vertex buffer is initialized with following function. Nota that some vertices won't be used.
+The vertex buffer is initialized with following function. Note that some vertices won't be used.
 
 ```
 void setVertex(vertex_t* V) {

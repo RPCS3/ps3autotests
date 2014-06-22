@@ -1,0 +1,63 @@
+[*] Checking sys_event_flag_create errors:
+sys_event_flag_create: &sem == NULL returns: 0x8001000d
+sys_event_flag_create: &attr == NULL returns: 0x8001000d
+sys_event_flag_create: uninitialized attr returns: 0x80010002
+
+[*] Checking sys_event_flag_wait errors:
+sys_event_flag_wait: short timeout returns: 0x8001000b
+sys_event_flag_wait: mode == 0 returns: 0x80010002
+sys_event_flag_wait: mode == AND|OR returns: 0x80010002
+sys_event_flag_wait: failed event flag id returns: 0x80010005
+sys_event_flag_wait: invalid event flag id returns: 0x80010005
+
+[*] Checking sys_event_flag_trywait errors:
+sys_event_flag_trywait: mode == 0 returns: 0x80010002
+sys_event_flag_trywait: mode == AND|OR returns: 0x80010002
+sys_event_flag_trywait: failed event flag id returns: 0x80010005
+sys_event_flag_trywait: invalid event flag id returns: 0x80010005
+
+[*] Checking sys_event_flag_set errors:
+sys_event_flag_set: failed event flag id returns: 0x80010005
+sys_event_flag_set: invalid event flag id returns: 0x80010005
+
+[*] Checking sys_event_flag_clear errors:
+sys_event_flag_clear: failed event flag id returns: 0x80010005
+sys_event_flag_clear: invalid event flag id returns: 0x80010005
+
+[*] Checking sys_event_flag_cancel errors:
+sys_event_flag_cancel: failed event flag id returns: 0x80010005
+sys_event_flag_cancel: invalid event flag id returns: 0x80010005
+
+[*] Checking sys_event_flag_get errors:
+sys_event_flag_get: &flags == NULL returns: 0x8001000d
+sys_event_flag_get: failed event flag id returns: 0x80010005
+sys_event_flag_get: invalid event flag id returns: 0x80010005
+
+[*] Checking sys_event_flag_destroy errors:
+sys_event_flag_destroy: failed event flag id returns: 0x80010005
+sys_event_flag_destroy: invalid event flag id returns: 0x80010005
+sys_event_flag_destroy: destroyed event flag id returns: 0x80010005
+
+[*] Testing sys_event_flag_wait and sys_event_flag_set:
+Master: Starting.
+Worker[0] did his job successfully.
+Worker[1] did his job successfully.
+Worker[2] did his job successfully.
+Worker[3] did his job successfully.
+Worker[4] did his job successfully.
+Master: Exiting.
+
+[*] Testing sys_event_flag_get and sys_event_flag_(clear|set):
+sys_event_flag_get: eflag_master -> 0x0000000000000000
+sys_event_flag_get: eflag_worker -> 0x000000000000001f
+sys_event_flag_get: eflag_master -> 0xaaaaaaaaaaaaaaab
+sys_event_flag_get: eflag_worker -> 0x000000000000000a
+sys_event_flag_get: eflag_master -> 0x0000000000000001
+sys_event_flag_get: eflag_worker -> 0x0000000000000000
+
+[*] Testing sys_event_flag_trywait and sys_event_flag_cancel:
+sys_event_flag_trywait worked fine
+sys_event_flag_trywait returned an error (probably, this was supposed to happen)
+sys_event_flag_wait: Wait canceled successfully.
+sys_event_flag_wait: Wait canceled successfully.
+sys_event_flag_cancel: Woke up 2 threads
