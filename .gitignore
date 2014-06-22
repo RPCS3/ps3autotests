@@ -34,9 +34,10 @@ Temp/
 *.ps3
 *.rpcs3
 
-# Uninteresting Source files
+# Uninteresting Source files (feel free to ask if you need them though)
 tests/rsx/rsx_fp_dynamic/*.cpp
 tests/rsx/rsx_fp_static/*.cpp
+tests/rsx/primitives/*.cpp
 tests/cpu/spu*/*.ppu.cpp
 
 # Uninteresting Tests

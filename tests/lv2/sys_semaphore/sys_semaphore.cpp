@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sys/timer.h>
 #include <sys/sys_time.h>
@@ -79,8 +80,9 @@ void testSysSemaphoreErrors()
 	sys_semaphore_t sem;              // Working semaphore
 	sys_semaphore_t sem_f;            // Broken semaphore
 	sys_semaphore_attribute_t attr;   // Initialized semaphore attribute
-	sys_semaphore_attribute_t attr_u; // Uninitialized semaphore attribute
+	sys_semaphore_attribute_t attr_z; // Zeroed semaphore attribute
 	sys_semaphore_attribute_initialize(attr);
+	memset(&attr_z, 0x00, sizeof(sys_semaphore_attribute_t));
 	sys_semaphore_value_t val;
 
 	// Create the working semaphore
@@ -97,7 +99,7 @@ void testSysSemaphoreErrors()
 	printf("sys_semaphore_create: initial_val > max_val returns: 0x%x\n", sys_semaphore_create(&sem_f, &attr, 2, 1));
 	printf("sys_semaphore_create: &sem == NULL returns: 0x%x\n", sys_semaphore_create(NULL, &attr, 0, 1));
 	printf("sys_semaphore_create: &attr == NULL returns: 0x%x\n", sys_semaphore_create(&sem_f, NULL, 0, 1));
-	printf("sys_semaphore_create: uninitialized attr returns: 0x%x\n",  sys_semaphore_create(&sem_f, &attr_u, 0, 1));
+	printf("sys_semaphore_create: uninitialized attr returns: 0x%x\n",  sys_semaphore_create(&sem_f, &attr_z, 0, 1));
 	
 	// Error tests
 	printf("\n[*] Checking sys_semaphore_get_value errors:\n");
@@ -180,6 +182,8 @@ int main(void) {
 	sys_timer_sleep(2);
 	sys_semaphore_get_value(g_sem, &val);
 	printf("sys_semaphore_get_value: 0x%x\n", val);
+
+	// TODO: Repeat the tests, but now modifying sys_semaphore_attribute_t members.
 
 	return 0;
 }
