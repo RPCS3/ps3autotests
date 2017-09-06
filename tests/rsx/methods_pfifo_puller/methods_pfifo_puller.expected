@@ -1,0 +1,7 @@
+Reference: 0x12345678
+Semaphore 1: 0x00000000
+Semaphore 2: 0x00000000
+Semaphore 1: 0x00000001
+Semaphore 2: 0xFFFFFFFF
+Semaphore 1: 0x00000002
+Semaphore 2: 0x00000001
