@@ -4,6 +4,8 @@ import os
 import ntpath
 import sys
 import subprocess
+import signal
+from difflib import Differ
 
 # Constants
 OUTPUT_STDOUT = 0 # All output is obtained through stdout. Isn't used by rpcs3.
@@ -20,27 +22,34 @@ scriptFolder = os.path.dirname(os.path.realpath(__file__))
 # List of tests and benchmarks
 autotests = (
     ('tests/cpu/basic',                   OUTPUT_TTYLOG,  COMPARE_TEXT),
-    ('tests/cpu/ppu_branch',              OUTPUT_FILE,    COMPARE_TEXT),
-    ('tests/cpu/ppu_float_arithmetic',    OUTPUT_FILE,    COMPARE_TEXT),
-    ('tests/cpu/ppu_float_compare',       OUTPUT_FILE,    COMPARE_TEXT),
-    ('tests/cpu/ppu_float_conversion',    OUTPUT_FILE,    COMPARE_TEXT),
-    ('tests/cpu/ppu_float_load',          OUTPUT_FILE,    COMPARE_TEXT),
-    ('tests/cpu/ppu_float_store',         OUTPUT_FILE,    COMPARE_TEXT),
+    ('tests/cpu/ppu_branch',              OUTPUT_FILE,    COMPARE_TEXT, 'output.txt'),
+    ('tests/cpu/ppu_float_arithmetic',    OUTPUT_FILE,    COMPARE_TEXT, 'output.txt'),
+    ('tests/cpu/ppu_float_compare',       OUTPUT_FILE,    COMPARE_TEXT, 'output.txt'),
+    ('tests/cpu/ppu_float_conversion',    OUTPUT_FILE,    COMPARE_TEXT, 'output.txt'),
+    ('tests/cpu/ppu_float_load',          OUTPUT_FILE,    COMPARE_TEXT, 'output.txt'),
+    ('tests/cpu/ppu_float_store',         OUTPUT_FILE,    COMPARE_TEXT, 'output.txt'),
  #   ('tests/cpu/ppu_gpr',                 OUTPUT_TTYLOG,  COMPARE_TEXT), takes too long
-    ('tests/cpu/ppu_integer_arithmetic',  OUTPUT_FILE,    COMPARE_TEXT),
-    ('tests/cpu/ppu_integer_compare',     OUTPUT_FILE,    COMPARE_TEXT),
-    ('tests/cpu/ppu_integer_logical',     OUTPUT_FILE,    COMPARE_TEXT),
-    ('tests/cpu/ppu_integer_rotate',      OUTPUT_FILE,    COMPARE_TEXT),
-    ('tests/cpu/ppu_integer_shift',       OUTPUT_FILE,    COMPARE_TEXT),
-    ('tests/cpu/ppu_vector_integer_arithmetic', OUTPUT_FILE, COMPARE_TEXT),
-#    ('tests/cpu/ppu_vpu',                 OUTPUT_TTYLOG,  COMPARE_TEXT),
-#    ('tests/cpu/spu_alu',                 OUTPUT_TTYLOG,  COMPARE_TEXT), .expected isn't correct
-#    ('tests/cpu/spu_fpu',                 OUTPUT_TTYLOG,  COMPARE_TEXT), .expected isn't correct
-#    ('tests/cpu/spu_generic',             OUTPUT_TTYLOG,  COMPARE_TEXT),
-    ('tests/lv2/sys_event_flag',          OUTPUT_TTYLOG,  COMPARE_TEXT),
-    ('tests/lv2/sys_process',             OUTPUT_TTYLOG,  COMPARE_TEXT),
-    ('tests/lv2/sys_semaphore',           OUTPUT_TTYLOG,  COMPARE_TEXT),
+    ('tests/cpu/ppu_integer_arithmetic',  OUTPUT_FILE,    COMPARE_TEXT, 'output.txt'),
+    ('tests/cpu/ppu_integer_compare',     OUTPUT_FILE,    COMPARE_TEXT, 'output.txt'),
+    ('tests/cpu/ppu_integer_logical',     OUTPUT_FILE,    COMPARE_TEXT, 'output.txt'),
+    ('tests/cpu/ppu_integer_rotate',      OUTPUT_FILE,    COMPARE_TEXT, 'output.txt'),
+    ('tests/cpu/ppu_integer_shift',       OUTPUT_FILE,    COMPARE_TEXT, 'output.txt'),
+    ('tests/cpu/ppu_vector_integer_arithmetic', OUTPUT_FILE, COMPARE_TEXT, 'output.txt'),
+    ('tests/cpu/ppu_vpu',                 OUTPUT_TTYLOG,  COMPARE_TEXT, 'output.txt'),
+    ('tests/cpu/spu_alu',                 OUTPUT_TTYLOG,  COMPARE_TEXT, 'output.txt'), #.expected isn't correct
+    ('tests/cpu/spu_fpu',                 OUTPUT_TTYLOG,  COMPARE_TEXT, 'output.txt'), #.expected isn't correct
+    ('tests/cpu/spu_generic',             OUTPUT_TTYLOG,  COMPARE_TEXT, 'output.txt'),
+    ('tests/lv2/sys_event_flag',          OUTPUT_TTYLOG,  COMPARE_TEXT, 'output.txt'),
+    ('tests/lv2/sys_process',             OUTPUT_TTYLOG,  COMPARE_TEXT, 'output.txt'),
+    ('tests/lv2/sys_semaphore',           OUTPUT_TTYLOG,  COMPARE_TEXT, 'output.txt'),
 )
+
+def signal_handler(sig, frame):
+    print("User aborted testing!!")
+    os._exit(1)
+
+# we'll register for the CTRL-C 'abort' signal
+signal.signal(signal.SIGINT, signal_handler)
 
 # Main
 def runTests(emulator, baseDir):
@@ -48,6 +57,7 @@ def runTests(emulator, baseDir):
 
     # Run tests
     for test in autotests:
+    
         # Parameters
         relProjectFolder = test[0]
         absProjectFolder = os.path.join(scriptFolder, relProjectFolder)
@@ -56,52 +66,76 @@ def runTests(emulator, baseDir):
         if (not os.path.isfile(elfPath)):
             elfPath = os.path.join(absProjectFolder, projectName) + '.ppu.elf'
         expectedPath = os.path.join(absProjectFolder, projectName) + '.expected'
-        outputPath = os.path.join(absProjectFolder, 'output.txt')
-        ttyPath = os.path.join(os.path.dirname(emulator),"TTY.log")
         outputMethod = test[1]
         compareMethod = test[2]
+        if outputMethod == OUTPUT_FILE:
+            outputPath = os.path.join(absProjectFolder, test[3])
+        ttyPath = os.path.join(os.path.dirname(emulator),"TTY.log")
 
         # Command & Expected file
-        cmd = emulator + ' ' + os.path.join(baseDir, elfPath)
-        expected = open(os.path.join(baseDir, expectedPath), 'rb')
-
-        # Get output
-        if outputMethod == OUTPUT_STDOUT:
-            result = subprocess.check_output(cmd, shell=True)
-        if outputMethod == OUTPUT_FILE:
-            subprocess.check_output(cmd, shell=True);
-            result = open(outputPath, 'rb').read()
-        if outputMethod == OUTPUT_TTYLOG:
-            subprocess.check_output(cmd, shell=True);
-            result = open(ttyPath, 'rb').read()
-
-        # Compare output
-        if compareMethod == COMPARE_TEXT:
-            result = result.replace('\r\n', '\n')
-            if result == expected.read():
-                print " - Success: ", relProjectFolder
+        cmd = emulator + ' --no-gui ' + '"' + os.path.join(baseDir, elfPath) + '"'
+        if os.path.exists(os.path.join(baseDir, expectedPath)):
+            if compareMethod == COMPARE_TEXT:
+                expected = open(os.path.join(baseDir, expectedPath), 'r')
             else:
-                print " - Error:   ", relProjectFolder
-                errors = True
+                expected = open(os.path.join(baseDir, expectedPath), 'rb')
 
-        # Delete output file if necessary
-        if outputMethod == OUTPUT_FILE:
-            os.remove(outputPath)
+        try:
+            # Get output
+            if outputMethod == OUTPUT_STDOUT:
+                rpcs3 = subprocess.run(cmd, timeout=60) #we'll give each command 1minute to execute before killing it
+            if outputMethod == OUTPUT_FILE:
+                rpcs3 = subprocess.run(cmd, timeout=60) #we'll give each command 1minute to execute before killing it
+                if compareMethod == COMPARE_TEXT:
+                    result = open(outputPath, 'r').read().splitlines()
+                else:
+                    result = open(outputPath, 'rb').read()
+            if outputMethod == OUTPUT_TTYLOG:
+                rpcs3 = subprocess.run(cmd, timeout=60) #we'll give each command 1minute to execute before killing it
+                result = open(ttyPath, 'r').read().splitlines()
+                
+            # Compare output
+            if compareMethod == COMPARE_TEXT:
+                expected = expected.read().splitlines()
+                if result == expected:
+                    print (" - Success:\t\t", relProjectFolder)
+                    # Delete output file only on success
+                    if outputMethod == OUTPUT_FILE:
+                        os.remove(outputPath)
+                else:
+                    print (" - Error:\t\t", relProjectFolder)
+                    errors = True
+                    
+                    d = Differ()
+                    diff = d.compare(expected, result)
+                    #for line in diff:  #python appears to completely lock up here under v3.8.5
+                    #    print(line)
+
+            
+                
+        except Exception as e:
+            print (" - Error:\t\t", relProjectFolder, " - ", sys.exc_info()[0])
+            
+            if type(e) is subprocess.TimeoutExpired:
+                #we've given rpcs3 the command to die... but we should give it a little more time
+                sleep(5)
+            errors = True
+        
 
     # Return errors
     if errors:
-        print "Some tests failed!"
-        exit(1)
+        print ("Some tests failed!")
+        sys.exit(1)
     else:
-        print "All tests succeeded!"
-        exit(0)
+        print ("All tests succeeded!")
+        sys.exit(0)
 
 
 if __name__ == '__main__':
     if len(sys.argv) <= 1:
-        print 'PS3 Autotests: Tests, benchmarks and demos for emulators'
-        print 'Usage: run-tests.py [arguments] path/to/emulator.exe'
-        print 'Arguments: (none available)'
+        print ('PS3 Autotests: Tests, benchmarks and demos for emulators')
+        print ('Usage: run-tests.py [arguments] path/to/emulator.exe')
+        print ('Arguments: (none available)')
     else:
         baseDir = os.path.dirname(os.path.abspath(__file__)).replace('\\', '/')
         emulator = sys.argv[len(sys.argv) - 1]
