@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import ntpath
@@ -77,11 +77,11 @@ def runTests(emulator, baseDir):
 
         # Compare output
         if compareMethod == COMPARE_TEXT:
-            result = result.replace('\r\n', '\n')
+            result = result.replace(b'\r\n', b'\n')
             if result == expected.read():
-                print " - Success: ", relProjectFolder
+                print(" - Success: ", relProjectFolder)
             else:
-                print " - Error:   ", relProjectFolder
+                print(" - Error:   ", relProjectFolder)
                 errors = True
 
         # Delete output file if necessary
@@ -90,18 +90,18 @@ def runTests(emulator, baseDir):
 
     # Return errors
     if errors:
-        print "Some tests failed!"
+        print("Some tests failed!")
         exit(1)
     else:
-        print "All tests succeeded!"
+        print("All tests succeeded!")
         exit(0)
 
 
 if __name__ == '__main__':
     if len(sys.argv) <= 1:
-        print 'PS3 Autotests: Tests, benchmarks and demos for emulators'
-        print 'Usage: run-tests.py [arguments] path/to/emulator.exe'
-        print 'Arguments: (none available)'
+        print('PS3 Autotests: Tests, benchmarks and demos for emulators')
+        print('Usage: run-tests.py [arguments] path/to/emulator.exe')
+        print('Arguments: (none available)')
     else:
         baseDir = os.path.dirname(os.path.abspath(__file__)).replace('\\', '/')
         emulator = sys.argv[len(sys.argv) - 1]

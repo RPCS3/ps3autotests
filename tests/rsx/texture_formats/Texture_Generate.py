@@ -54,8 +54,8 @@ for y in range(img.size[0])[::-1]:
         ARGB |= (pix[x,y][0] & 0xF8) << 7
         ARGB |= (pix[x,y][1] & 0xF8) << 2
         ARGB |= (pix[x,y][2] & 0xF8) >> 3
-        w.write(chr((ARGB >>  8) & 0xFF))
-        w.write(chr((ARGB >>  0) & 0xFF))
+        w.write(bytes([(ARGB >>  8) & 0xFF]))
+        w.write(bytes([(ARGB >>  0) & 0xFF]))
 w.close()
 
 
@@ -65,8 +65,8 @@ for y in range(img.size[0])[::-1]:
     for x in range(img.size[1]):
         AR = (pix[x,y][3] & 0xF0) | (pix[x,y][0] >> 4)
         GB = (pix[x,y][1] & 0xF0) | (pix[x,y][2] >> 4)
-        w.write(chr(AR))
-        w.write(chr(GB))
+        w.write(bytes([AR]))
+        w.write(bytes([GB]))
 w.close()
 
 
@@ -74,10 +74,10 @@ w.close()
 w = open("Texture-A8R8G8B8.raw", "wb")
 for y in range(img.size[0])[::-1]:
     for x in range(img.size[1]):
-        w.write(chr(pix[x,y][3]))
-        w.write(chr(pix[x,y][0]))
-        w.write(chr(pix[x,y][1]))
-        w.write(chr(pix[x,y][2]))
+        w.write(bytes([pix[x,y][3]]))
+        w.write(bytes([pix[x,y][0]]))
+        w.write(bytes([pix[x,y][1]]))
+        w.write(bytes([pix[x,y][2]]))
 w.close()
 
 
@@ -85,7 +85,7 @@ w.close()
 w = open("Texture-B8.raw", "wb")
 for y in range(img.size[0])[::-1]:
     for x in range(img.size[1]):
-        w.write(chr(pix[x,y][2]))
+        w.write(bytes([pix[x,y][2]]))
 w.close()
 
 
@@ -93,12 +93,12 @@ w.close()
 w = open("Texture-COMPRESSED_B8R8_G8R8.raw", "wb")
 for y in range(img.size[0])[::-1]:
     for x in range(0, img.size[1], 2):
-        b = (pix[x + 0, y][2] + pix[x + 1, y][2]) / 2
-        g = (pix[x + 0, y][1] + pix[x + 1, y][1]) / 2
-        w.write(chr(b))
-        w.write(chr(pix[x + 1, y][0]))
-        w.write(chr(g))
-        w.write(chr(pix[x + 0, y][0]))
+        b = (pix[x + 0, y][2] + pix[x + 1, y][2]) // 2
+        g = (pix[x + 0, y][1] + pix[x + 1, y][1]) // 2
+        w.write(bytes([b]))
+        w.write(bytes([pix[x + 1, y][0]]))
+        w.write(bytes([g]))
+        w.write(bytes([pix[x + 0, y][0]]))
 w.close()
 
 
@@ -106,12 +106,12 @@ w.close()
 w = open("Texture-COMPRESSED_R8B8_R8G8.raw", "wb")
 for y in range(img.size[0])[::-1]:
     for x in range(0, img.size[1], 2):
-        b = (pix[x + 0, y][2] + pix[x + 1, y][2]) / 2
-        g = (pix[x + 0, y][1] + pix[x + 1, y][1]) / 2
-        w.write(chr(pix[x + 1, y][0]))
-        w.write(chr(b))
-        w.write(chr(pix[x + 0, y][0]))
-        w.write(chr(g))
+        b = (pix[x + 0, y][2] + pix[x + 1, y][2]) // 2
+        g = (pix[x + 0, y][1] + pix[x + 1, y][1]) // 2
+        w.write(bytes([pix[x + 1, y][0]]))
+        w.write(bytes([b]))
+        w.write(bytes([pix[x + 0, y][0]]))
+        w.write(bytes([g]))
 w.close()
 
 
@@ -119,8 +119,8 @@ w.close()
 w = open("Texture-COMPRESSED_HILO8.raw", "wb")
 for y in range(img.size[0])[::-1]:
     for x in range(0, img.size[1]):
-        w.write(chr(255-y))
-        w.write(chr(x))
+        w.write(bytes([255-y]))
+        w.write(bytes([x]))
 w.close()
 
 
@@ -128,8 +128,8 @@ w.close()
 w = open("Texture-COMPRESSED_HILO_S8.raw", "wb")
 for y in range(img.size[0])[::-1]:
     for x in range(0, img.size[1]):
-        w.write(chr(255-y))
-        w.write(chr(x))
+        w.write(bytes([255-y]))
+        w.write(bytes([x]))
 w.close()
 
 
@@ -141,8 +141,8 @@ for y in range(img.size[0])[::-1]:
         ARGB |= (pix[x,y][0] & 0xF8) << 7
         ARGB |= (pix[x,y][1] & 0xF8) << 2
         ARGB |= (pix[x,y][2] & 0xF8) >> 3
-        w.write(chr((ARGB >>  8) & 0xFF))
-        w.write(chr((ARGB >>  0) & 0xFF))
+        w.write(bytes([(ARGB >>  8) & 0xFF]))
+        w.write(bytes([(ARGB >>  0) & 0xFF]))
 w.close()
 
 
@@ -150,10 +150,10 @@ w.close()
 w = open("Texture-D8R8G8B8.raw", "wb")
 for y in range(img.size[0])[::-1]:
     for x in range(img.size[1]):
-        w.write(chr(0x00))
-        w.write(chr(pix[x,y][0]))
-        w.write(chr(pix[x,y][1]))
-        w.write(chr(pix[x,y][2]))
+        w.write(b'\x00')
+        w.write(bytes([pix[x,y][0]]))
+        w.write(bytes([pix[x,y][1]]))
+        w.write(bytes([pix[x,y][2]]))
 w.close()
 
 
@@ -161,8 +161,8 @@ w.close()
 w = open("Texture-G8B8.raw", "wb")
 for y in range(img.size[0])[::-1]:
     for x in range(img.size[1]):
-        w.write(chr(pix[x,y][1]))
-        w.write(chr(pix[x,y][2]))
+        w.write(bytes([pix[x,y][1]]))
+        w.write(bytes([pix[x,y][2]]))
 w.close()
 
 
@@ -174,8 +174,8 @@ for y in range(img.size[0])[::-1]:
         ARGB |= (pix[x,y][1] & 0xF8) << 3
         ARGB |= (pix[x,y][2] & 0xF8) >> 2
         ARGB |= (pix[x,y][3] & 0x80) >> 7
-        w.write(chr((ARGB >>  8) & 0xFF))
-        w.write(chr((ARGB >>  0) & 0xFF))
+        w.write(bytes([(ARGB >>  8) & 0xFF]))
+        w.write(bytes([(ARGB >>  0) & 0xFF]))
 w.close()
 
 
@@ -186,8 +186,8 @@ for y in range(img.size[0])[::-1]:
         ARGB  = (pix[x,y][0] & 0xF8) << 8
         ARGB |= (pix[x,y][1] & 0xFC) << 3
         ARGB |= (pix[x,y][2] & 0xF8) >> 3
-        w.write(chr((ARGB >>  8) & 0xFF))
-        w.write(chr((ARGB >>  0) & 0xFF))
+        w.write(bytes([(ARGB >>  8) & 0xFF]))
+        w.write(bytes([(ARGB >>  0) & 0xFF]))
 w.close()
 
 
@@ -198,8 +198,8 @@ for y in range(img.size[0])[::-1]:
         ARGB  = (pix[x,y][0] & 0xFC) << 8
         ARGB |= (pix[x,y][1] & 0xF8) << 2
         ARGB |= (pix[x,y][2] & 0xF8) >> 3
-        w.write(chr((ARGB >>  8) & 0xFF))
-        w.write(chr((ARGB >>  0) & 0xFF))
+        w.write(bytes([(ARGB >>  8) & 0xFF]))
+        w.write(bytes([(ARGB >>  0) & 0xFF]))
 w.close()
 
 
@@ -211,14 +211,14 @@ for y in range(img.size[0])[::-1]:
         Z = FP32toFP16(float(pix[x,y][1]/255.0))
         Y = FP32toFP16(float(pix[x,y][2]/255.0))
         X = FP32toFP16(float(pix[x,y][3]/255.0))
-        w.write(chr(W >> 8))
-        w.write(chr(W & 0xFF))
-        w.write(chr(Z >> 8))
-        w.write(chr(Z & 0xFF))
-        w.write(chr(Y >> 8))
-        w.write(chr(Y & 0xFF))
-        w.write(chr(X >> 8))
-        w.write(chr(X & 0xFF))
+        w.write(bytes([W >> 8]))
+        w.write(bytes([W & 0xFF]))
+        w.write(bytes([Z >> 8]))
+        w.write(bytes([Z & 0xFF]))
+        w.write(bytes([Y >> 8]))
+        w.write(bytes([Y & 0xFF]))
+        w.write(bytes([X >> 8]))
+        w.write(bytes([X & 0xFF]))
 w.close()
 
 
@@ -226,8 +226,8 @@ w.close()
 w = open("Texture-X16.raw", "wb")
 for y in range(img.size[0])[::-1]:
     for x in range(img.size[1]):
-        w.write(chr(pix[x,y][3]))
-        w.write('\x00')
+        w.write(bytes([pix[x,y][3]]))
+        w.write(b'\x00')
 w.close()
 
 
@@ -235,10 +235,10 @@ w.close()
 w = open("Texture-Y16_X16.raw", "wb")
 for y in range(img.size[0])[::-1]:
     for x in range(img.size[1]):
-        w.write(chr(pix[x,y][2]))
-        w.write('\x00')
-        w.write(chr(pix[x,y][3]))
-        w.write('\x00')
+        w.write(bytes([pix[x,y][2]]))
+        w.write(b'\x00')
+        w.write(bytes([pix[x,y][3]]))
+        w.write(b'\x00')
 w.close()
 
 
@@ -248,8 +248,8 @@ for y in range(img.size[0])[::-1]:
     for x in range(img.size[1]):
         Y = FP32toFP16(float(pix[x,y][2]/255.0))
         X = FP32toFP16(float(pix[x,y][3]/255.0))
-        w.write(chr(Y >> 8))
-        w.write(chr(Y & 0xFF))
-        w.write(chr(X >> 8))
-        w.write(chr(X & 0xFF))
+        w.write(bytes([Y >> 8]))
+        w.write(bytes([Y & 0xFF]))
+        w.write(bytes([X >> 8]))
+        w.write(bytes([X & 0xFF]))
 w.close()
