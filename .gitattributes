@@ -1,1 +1,2 @@
 *.expected -text
+*.elf binary diff=elf
